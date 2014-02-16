@@ -51,7 +51,6 @@ using System.Windows;
                 InitializeWithConfig(newConfig);
 
                 currentConfig = newConfig;
-                txtConfig.Text = currentConfig.RawText;
                 UpdateStatus("Successfully loaded " + ConfigHelper.ConfigFile);
             }
             catch (Exception e)
@@ -113,8 +112,6 @@ using System.Windows;
 
         private void UpdateStatus(string text)
         {
-            lblStatus.Content = text;
-            lblStatus.ToolTip = text;
             txtStatus.Text += DateTime.Now.ToString() + ": " + text + "\n";
         }
     }
