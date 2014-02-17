@@ -3,6 +3,7 @@ using System.Reflection;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using Chimer.Audio;
 
 namespace Chimer
 {
@@ -10,12 +11,19 @@ namespace Chimer
     {
         private static readonly string CONFIG_FILE = "config.json";
 
+        private static string BaseDir
+        {
+            get
+            {
+                return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            }
+        }
+
         public static string ConfigFile
         {
             get
             {
-                string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                return path + "\\" + CONFIG_FILE;
+                return BaseDir + "\\" + CONFIG_FILE;
             }
         }
 
@@ -23,6 +31,13 @@ namespace Chimer
         {
             string json = File.ReadAllText(ConfigFile);
             Config c = JsonConvert.DeserializeObject<Config>(json);
+            if (c.sounds == null)
+                c.sounds = new System.Collections.Generic.Dictionary<string, SoundConfig>();
+            if (c.zones == null)
+                c.zones = new System.Collections.Generic.Dictionary<string, int>();
+            if (c.schedule == null)
+                c.schedule = new System.Collections.Generic.List<ScheduleItem>();
+
             ValidateConfig(c);
             c.RawText = json;
             return c;
@@ -34,11 +49,30 @@ namespace Chimer
             {
                 InitializeConfigFile(ConfigFile);
             }
+
+            string chimeFile = BaseDir + "\\chime.wav";
+            if (!File.Exists(chimeFile))
+            {
+                InitializeChimeWav(chimeFile);
+            }
         }
 
         private static void InitializeConfigFile(string configFile) {
             string json = GetDefaultConfigContents();
             File.WriteAllText(configFile, json);
+        }
+
+        private static void InitializeChimeWav(string chimeFile)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = "Chimer.chime.wav";
+
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            {
+                using (FileStream writer = File.Open(chimeFile, FileMode.Create)) {
+                    stream.CopyTo(writer);
+                }
+            }
         }
 
         private static string GetDefaultConfigContents() 
@@ -57,9 +91,13 @@ namespace Chimer
         {
             foreach (var keyValue in c.sounds)
             {
-                if (!File.Exists(keyValue.Value))
+                try
                 {
-                    throw new ValidationException("Could not load sound file " + keyValue.Value);
+                    // Just see if we can load it successfully.
+                    new CachedSound(keyValue.Value.file);
+                }
+                catch(Exception e) {
+                    throw new ValidationException("Could not load sound file " + keyValue.Value, e);
                 }
             }
 
@@ -71,11 +109,11 @@ namespace Chimer
                 }
             }
 
-            foreach (ChimeConfig chime in c.chimes)
+            foreach (ScheduleItem chime in c.schedule)
             {
                 if (!c.zones.Keys.Contains(chime.zone))
                 {
-                    throw new ValidationException("Invalid zone encounterd while parsing chimes: " + chime.zone);
+                    throw new ValidationException("Invalid zone encounterd while parsing schedule item: " + chime.zone);
                 }
                 foreach (string time in chime.times)
                 {
@@ -89,7 +127,7 @@ namespace Chimer
 
                 if (!c.sounds.Keys.Contains(chime.sound))
                 {
-                    throw new ValidationException("Invalid sound encountered while parsing chimes: " + chime.sound);
+                    throw new ValidationException("Invalid sound encountered while parsing schedule item: " + chime.sound);
                 }
             }
         }
@@ -97,9 +135,7 @@ namespace Chimer
 
     public class ValidationException : Exception
     {
-        public ValidationException(string message) : base(message)
-        {
-
-        }
+        public ValidationException(string message) : base(message) {}
+        public ValidationException(string message, Exception source) : base(message, source) { }
     }
 }

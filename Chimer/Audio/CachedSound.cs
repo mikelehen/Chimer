@@ -9,7 +9,7 @@
     {
         public float[] AudioData { get; private set; }
         public WaveFormat WaveFormat { get; private set; }
-        public CachedSound(string audioFileName)
+        public CachedSound(string audioFileName, float volume = 1)
         {
             WaveFormat = new WaveFormat(44100, 1);
             using (var audioFileReader = new AudioFileReader(audioFileName))
@@ -23,31 +23,37 @@
                     wholeFile.AddRange(readBuffer.Take(samplesRead));
                 }
                 AudioData = convertToMono44100(wholeFile, srcFormat);
+                
+                // Apply the volume.
+                for (int i = 0; i < AudioData.Length; i++)
+                {
+                    AudioData[i] *= volume;
+                }
             }
         }
 
         private float[] convertToMono44100(List<float> src, WaveFormat srcFormat)
         {
-            if (srcFormat.SampleRate > 44100 || (44100 % srcFormat.SampleRate != 0))
-            {
-                throw new Exception("Wave files must be 44100 bits per second or a divisor of 44100.");
-            }
-
-            int divisor = 44100 / srcFormat.SampleRate;
             int srcSampleCount = src.Count / srcFormat.Channels;
-            float[] dest = new float[(srcSampleCount - 1) * divisor]; // subtract the last sample, since it doesn't have anything to interpolate to.
+            float destSamplesPerSourceSample = (float)44100 / srcFormat.SampleRate;
 
-            for (int iDest = 0; iDest < dest.Length; iDest++)
+            int destSampleCount = (int)Math.Floor(srcSampleCount * destSamplesPerSourceSample);
+            float[] dest = new float[destSampleCount];
+
+            for (int iDest = 0; iDest < destSampleCount; iDest++)
             {
                 // We just interpolate between samples even though I'm sure there's a better DSP way.
-                int srcSampleNum = iDest / divisor;
-                int iSrc = srcSampleNum * srcFormat.Channels;
-                int iSrcNext = (srcSampleNum + 1) * srcFormat.Channels;
-                float value = src[iSrc];
-                float valueNext = src[iSrcNext];
-                float amountOfNextValue = (iDest % divisor) / divisor;
+                float srcSampleNum = iDest / destSamplesPerSourceSample;
+                int srcSampleWholeNumber = (int)Math.Truncate(srcSampleNum);
+                float srcSampleFraction = srcSampleNum - srcSampleWholeNumber;
+                
+                int iSrc = srcSampleWholeNumber * srcFormat.Channels;
+                int iSrcNext = (srcSampleWholeNumber + 1) * srcFormat.Channels;
+                
+                float srcValue = src[iSrc];
+                float srcValueNext = iSrcNext < src.Count ? src[iSrcNext] : srcValue;
 
-                dest[iDest] = (value * (1 - amountOfNextValue)) + (valueNext * amountOfNextValue);
+                dest[iDest] = (srcValue * (1 - srcSampleFraction)) + (srcValueNext * srcSampleFraction);
             }
 
             return dest;

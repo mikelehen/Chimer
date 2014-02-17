@@ -1,20 +1,22 @@
 ﻿namespace Chimer
 {
     using Audio;
-using Chimer.Scheduler;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using System.Windows;
+    using Chimer.Scheduler;
+    using Newtonsoft.Json;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Reflection;
+    using System.Windows;
+    using System.Linq;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const int STATUS_THRESHOLD = 10000000; // characters to keep in the status box.
         private Config currentConfig = null;
         private AudioPlaybackEngine engine = null;
         private Dictionary<string, CachedSound> cachedSounds = new Dictionary<string, CachedSound>();
@@ -24,7 +26,15 @@ using System.Windows;
         {
             InitializeComponent();
 
-            this.Closed += (s, e) => engine.Dispose();
+            LogStatus("Chimer started.");
+
+            this.Closed += (s, e) =>
+            {
+                if (engine != null)
+                {
+                    engine.Dispose();
+                }
+            };
             this.Loaded += (s, e) =>
             {
                 txtConfigFile.Text = ConfigHelper.ConfigFile;
@@ -51,7 +61,7 @@ using System.Windows;
                 InitializeWithConfig(newConfig);
 
                 currentConfig = newConfig;
-                UpdateStatus("Successfully loaded " + ConfigHelper.ConfigFile);
+                LogStatus("Successfully loaded " + ConfigHelper.ConfigFile);
             }
             catch (Exception e)
             {
@@ -85,7 +95,8 @@ using System.Windows;
             cachedSounds.Clear();
             foreach (var kvp in config.sounds)
             {
-                cachedSounds[kvp.Key] = new CachedSound(kvp.Value);
+                SoundConfig sndConf = kvp.Value;
+                cachedSounds[kvp.Key] = new CachedSound(sndConf.file, sndConf.volume);
             }
 
             if (scheduler != null)
@@ -94,15 +105,39 @@ using System.Windows;
                 scheduler = null;
             }
             scheduler = new ChimeScheduler(config);
-            scheduler.Chime += (s, scheduledChime) => playChime(scheduledChime);
+            scheduler.Chime += (s, scheduledChime) => playChime(scheduledChime.Zone, scheduledChime.Sound);
 
             scheduleDataGrid.ItemsSource = scheduler.UpcomingChimes;
+
+            SoundCombo.ItemsSource = null;
+            SoundCombo.Items.Clear();
+            if (config.sounds.Count > 0)
+            {
+                SoundCombo.ItemsSource = config.sounds.Keys;
+            }
+            else
+            {
+                SoundCombo.Items.Add("No sounds configured.");
+            }
+            SoundCombo.SelectedIndex = 0;
+
+            ZoneCombo.ItemsSource = null;
+            ZoneCombo.Items.Clear();
+            if (config.zones.Count > 0)
+            {
+                ZoneCombo.ItemsSource = config.zones.Keys;
+            }
+            else
+            {
+                ZoneCombo.Items.Add("No zones configured.");
+            }
+            ZoneCombo.SelectedIndex = 0;
         }
 
-        private void playChime(ScheduledChime chime)
+        private void playChime(string zone, string sound)
         {
-            engine.PlaySound(cachedSounds[chime.Sound], currentConfig.zones[chime.Zone]);
-            UpdateStatus("Played " + chime.Sound + " for " + chime.Zone + " at " + DateTime.Now.ToString());
+            engine.PlaySound(cachedSounds[sound], currentConfig.zones[zone]);
+            LogStatus("Played " + sound + " for " + zone + " at " + DateTime.Now.ToString());
         }
 
         private void btnReload_Click(object sender, RoutedEventArgs e)
@@ -110,9 +145,26 @@ using System.Windows;
             LoadConfig();
         }
 
-        private void UpdateStatus(string text)
+        private void LogStatus(string text)
         {
-            txtStatus.Text += DateTime.Now.ToString() + ": " + text + "\n";
+            string message = DateTime.Now.ToString() + ": " + text + "\n";
+            string newStatusText = txtStatus.Text + message;
+            if (newStatusText.Length > STATUS_THRESHOLD)
+            {
+                newStatusText = newStatusText.Substring(newStatusText.Length - STATUS_THRESHOLD);
+            }
+            txtStatus.Text = newStatusText;
+            txtStatus.ScrollToEnd();
+        }
+
+        private void PlayChime_Click(object sender, RoutedEventArgs e)
+        {
+            string zone = ZoneCombo.SelectedValue.ToString();
+            string sound = SoundCombo.SelectedValue.ToString();
+            if (currentConfig.zones.ContainsKey(zone) && currentConfig.sounds.ContainsKey(sound))
+            {
+                playChime(zone, sound);
+            }
         }
     }
 }

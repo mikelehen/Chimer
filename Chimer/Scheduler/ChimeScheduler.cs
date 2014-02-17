@@ -28,7 +28,7 @@ namespace Chimer.Scheduler
 
         private void makeEnumerators(Config c)
         {
-            foreach (ChimeConfig chime in c.chimes)
+            foreach (ScheduleItem chime in c.schedule)
             {
                 foreach (DayOfWeek day in chime.days)
                 {
