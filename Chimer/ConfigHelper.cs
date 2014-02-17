@@ -9,30 +9,12 @@ namespace Chimer
 {
     class ConfigHelper
     {
-        private static readonly string CONFIG_FILE = "config.json";
-
-        private static string BaseDir
+        public static Config Load(string configFile)
         {
-            get
-            {
-                return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            }
-        }
-
-        public static string ConfigFile
-        {
-            get
-            {
-                return BaseDir + "\\" + CONFIG_FILE;
-            }
-        }
-
-        public static Config Load()
-        {
-            string json = File.ReadAllText(ConfigFile);
+            string json = File.ReadAllText(configFile);
             Config c = JsonConvert.DeserializeObject<Config>(json);
             if (c.sounds == null)
-                c.sounds = new System.Collections.Generic.Dictionary<string, SoundConfig>();
+                c.sounds = new System.Collections.Generic.Dictionary<string, string>();
             if (c.zones == null)
                 c.zones = new System.Collections.Generic.Dictionary<string, int>();
             if (c.schedule == null)
@@ -43,50 +25,6 @@ namespace Chimer
             return c;
         }
 
-        public static void InitializeIfNecessary()
-        {
-            if (!File.Exists(ConfigFile))
-            {
-                InitializeConfigFile(ConfigFile);
-            }
-
-            string chimeFile = BaseDir + "\\chime.wav";
-            if (!File.Exists(chimeFile))
-            {
-                InitializeChimeWav(chimeFile);
-            }
-        }
-
-        private static void InitializeConfigFile(string configFile) {
-            string json = GetDefaultConfigContents();
-            File.WriteAllText(configFile, json);
-        }
-
-        private static void InitializeChimeWav(string chimeFile)
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "Chimer.chime.wav";
-
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            {
-                using (FileStream writer = File.Open(chimeFile, FileMode.Create)) {
-                    stream.CopyTo(writer);
-                }
-            }
-        }
-
-        private static string GetDefaultConfigContents() 
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "Chimer.example_config.json";
-
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                return reader.ReadToEnd();
-            }
-        }
-
         private static void ValidateConfig(Config c)
         {
             foreach (var keyValue in c.sounds)
@@ -94,7 +32,7 @@ namespace Chimer
                 try
                 {
                     // Just see if we can load it successfully.
-                    new CachedSound(keyValue.Value.file);
+                    new CachedSound(keyValue.Value);
                 }
                 catch(Exception e) {
                     throw new ValidationException("Could not load sound file " + keyValue.Value, e);
@@ -111,9 +49,12 @@ namespace Chimer
 
             foreach (ScheduleItem chime in c.schedule)
             {
-                if (!c.zones.Keys.Contains(chime.zone))
+                foreach (string zone in chime.zones)
                 {
-                    throw new ValidationException("Invalid zone encounterd while parsing schedule item: " + chime.zone);
+                    if (!c.zones.Keys.Contains(zone))
+                    {
+                        throw new ValidationException("Invalid zone encounterd while parsing schedule item: " + zone);
+                    }
                 }
                 foreach (string time in chime.times)
                 {

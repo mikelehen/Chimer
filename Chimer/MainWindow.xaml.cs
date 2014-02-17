@@ -10,6 +10,7 @@
     using System.Reflection;
     using System.Windows;
     using System.Linq;
+    using System.Windows.Threading;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -21,11 +22,14 @@
         private AudioPlaybackEngine engine = null;
         private Dictionary<string, CachedSound> cachedSounds = new Dictionary<string, CachedSound>();
         private ChimeScheduler scheduler = null;
+        private StreamWriter logWriter = null;
 
         public MainWindow()
         {
             InitializeComponent();
+            txtConfigFile.Text = Paths.ConfigFile;
 
+            logWriter = new StreamWriter(Paths.LogFile);
             LogStatus("Chimer started.");
 
             this.Closed += (s, e) =>
@@ -37,8 +41,6 @@
             };
             this.Loaded += (s, e) =>
             {
-                txtConfigFile.Text = ConfigHelper.ConfigFile;
-                ConfigHelper.InitializeIfNecessary();
                 LoadConfig();
             };
         }
@@ -50,21 +52,37 @@
 
         private void Edit()
         {
-            Process p = Process.Start("notepad.exe", ConfigHelper.ConfigFile);
+            Process p = Process.Start("notepad.exe", Paths.ConfigFile);
         }
 
         private void LoadConfig()
         {
+            LogStatus("Loading configuration from " + Paths.ConfigFile);
+
+            // Hack.  Dispatch this so the loading message shows up before we start
+            // loading the config, which can take a couple seconds (reading in the audio files).
+            DispatcherFrame frame = new DispatcherFrame();
+            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new DispatcherOperationCallback(delegate(object parameter)
+            {
+                LoadConfigInternal();
+                frame.Continue = false;
+                return null;
+            }), null);
+            Dispatcher.PushFrame(frame);
+        }
+
+        private void LoadConfigInternal() {
             try
             {
-                Config newConfig = ConfigHelper.Load();
+                Config newConfig = ConfigHelper.Load(Paths.ConfigFile);
                 InitializeWithConfig(newConfig);
 
                 currentConfig = newConfig;
-                LogStatus("Successfully loaded " + ConfigHelper.ConfigFile);
+                LogStatus("Successfully loaded " + Paths.ConfigFile);
             }
             catch (Exception e)
             {
+                LogStatus("Failed to use configuration: " + e.Message + "\n\n" + e.ToString());
                 // Try to get back to a good state.
                 if (currentConfig != null)
                 {
@@ -79,7 +97,7 @@
                 }
 
                 d.EditClicked += Edit;
-                d.RevertClicked += () => File.WriteAllText(ConfigHelper.ConfigFile, currentConfig.RawText);
+                d.RevertClicked += () => File.WriteAllText(Paths.ConfigFile, currentConfig.RawText);
                 d.Owner = this;
                 d.ShowDialog();
             }
@@ -95,8 +113,12 @@
             cachedSounds.Clear();
             foreach (var kvp in config.sounds)
             {
-                SoundConfig sndConf = kvp.Value;
-                cachedSounds[kvp.Key] = new CachedSound(sndConf.file, sndConf.volume);
+                var cachedSound = new CachedSound(kvp.Value);
+                cachedSounds[kvp.Key] = cachedSound;
+                if (cachedSound.Warning != null)
+                {
+                    LogStatus(cachedSound.Warning);
+                }
             }
 
             if (scheduler != null)
@@ -137,7 +159,7 @@
         private void playChime(string zone, string sound)
         {
             engine.PlaySound(cachedSounds[sound], currentConfig.zones[zone]);
-            LogStatus("Played " + sound + " for " + zone + " at " + DateTime.Now.ToString());
+            LogStatus("Played '" + sound + "' for '" + zone + "'.");
         }
 
         private void btnReload_Click(object sender, RoutedEventArgs e)
@@ -148,6 +170,10 @@
         private void LogStatus(string text)
         {
             string message = DateTime.Now.ToString() + ": " + text + "\n";
+
+            logWriter.Write(message);
+            logWriter.Flush();
+
             string newStatusText = txtStatus.Text + message;
             if (newStatusText.Length > STATUS_THRESHOLD)
             {

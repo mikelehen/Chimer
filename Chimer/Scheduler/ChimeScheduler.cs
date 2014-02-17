@@ -32,11 +32,14 @@ namespace Chimer.Scheduler
             {
                 foreach (DayOfWeek day in chime.days)
                 {
-                    foreach (string time in chime.times)
+                    foreach (string zone in chime.zones)
                     {
-                        var enumerator = makeChimeEnumerator(day, time, chime.zone, chime.sound);
-                        enumerator.MoveNext();
-                        chimeEnumerators.Add(enumerator);
+                        foreach (string time in chime.times)
+                        {
+                            var enumerator = makeChimeEnumerator(day, time, zone, chime.sound);
+                            enumerator.MoveNext();
+                            chimeEnumerators.Add(enumerator);
+                        }
                     }
                 }
             }

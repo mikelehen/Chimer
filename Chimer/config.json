@@ -1,0 +1,73 @@
+﻿{
+  /* 
+    The number of channels your Sound Card has.  For a 7.1 Surround card, use 8.
+    For 5.1, use 6.  For stereo, use 2. 
+  */
+  "channels": 8,
+
+  /* 
+    Zones are basically just friendly names you can assign to your sound card
+    output channels to help you remember what they're for.  You can change 
+    "zone 0", "zone 1", etc. to whatever you like.
+
+    For a 7.1 surround card, the channel numbers probably correspond to the 
+    following speakers (but no promises):
+      0 - Front left
+      1 - Front right
+      2 - center
+      3 - bass
+      4 - back left
+      5 - back right
+      6 - surround left
+      7 - surround right
+  */
+  "zones": {
+    "zone 0": 0,
+    "zone 1": 1,
+    "zone 2": 2,
+    "zone 3": 3,
+    "zone 4": 4,
+    "zone 5": 5,
+    "zone 6": 6,
+    "zone 7": 7,
+  },
+
+  /*
+    This is where you configure the sounds you want to be able to play.
+    WAV files and MP3s should work.  You can specify as many as you want.  Just 
+    separate them by commas.  Note that if you want to specify an absolute path, 
+    you'll need to double any \'s.  For example, "C:\\My Folder\\To\\Sound.wav"
+  */
+  "sounds": {
+    "chime": "chime.wav",
+    "fancy chime": "fancy_chime.wav"
+  },
+
+  /*
+    This is where you configure your schedule using rules to describe when and
+    in which zone(s) sounds should be played.  We've configured two rules.
+    
+    The first rule indicates that we'll play the "chime" sound every weekday at 
+    10AM and 11AM in zone 0 and zone 2.
+
+    The second indicates that we'll play the "fancy chime" sound every tuesday 
+    and thursday at 10AM and 12PM in zone 1.
+
+    You can add as many schedule rules as you like.  Just follow the format
+    and make sure to separate them by commas.
+  */
+  "schedule": [
+    {
+      "zones": ["zone 0", "zone 2"],
+      "days": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+      "times": ["10:00AM", "11:00AM", "12:00PM"],
+      "sound": "chime"
+    },
+    {
+      "zones": ["zone 1"],
+      "days": ["tuesday", "thursday"],
+      "times": ["10:00AM", "12:00PM"],
+      "sound": "chime"
+    }
+  ]
+}
