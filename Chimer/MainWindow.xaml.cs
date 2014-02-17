@@ -29,7 +29,7 @@
             InitializeComponent();
             txtConfigFile.Text = Paths.ConfigFile;
 
-            logWriter = new StreamWriter(Paths.LogFile);
+            logWriter = new StreamWriter(Paths.LogFile, append: true);
             LogStatus("Chimer started.");
 
             this.Closed += (s, e) =>
@@ -82,14 +82,14 @@
             }
             catch (Exception e)
             {
-                LogStatus("Failed to use configuration: " + e.Message + "\n\n" + e.ToString());
+                LogStatus("Failed to use configuration: " + e.Message + "\r\n\r\n" + e.ToString());
                 // Try to get back to a good state.
                 if (currentConfig != null)
                 {
                     InitializeWithConfig(currentConfig);
                 }
 
-                string text = e.Message + "\n\n\nDebug Info:\n" + e.ToString();
+                string text = e.Message + "\r\n\r\n\r\nDebug Info:\r\n" + e.ToString();
                 ConfigFileErrorDialog d = new ConfigFileErrorDialog(text);
                 if (currentConfig == null)
                 {
@@ -169,7 +169,7 @@
 
         private void LogStatus(string text)
         {
-            string message = DateTime.Now.ToString() + ": " + text + "\n";
+            string message = DateTime.Now.ToString() + ": " + text + "\r\n";
 
             logWriter.Write(message);
             logWriter.Flush();
