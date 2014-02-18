@@ -10,7 +10,7 @@ namespace Chimer
         [JsonIgnore]
         public string RawText;
 
-        public int channels;
+        public string device;
         public Dictionary<string, string> sounds;
         public Dictionary<string, int> zones;
         public List<ScheduleItem> schedule;

@@ -13,6 +13,14 @@ namespace Chimer
         {
             string json = File.ReadAllText(configFile);
             Config c = JsonConvert.DeserializeObject<Config>(json);
+
+            // Do some sanitization before we validate.
+            if (c.device != null)
+            {
+                c.device = c.device.Trim();
+                if (c.device == "")
+                    c.device = null;
+            }
             if (c.sounds == null)
                 c.sounds = new System.Collections.Generic.Dictionary<string, string>();
             if (c.zones == null)
@@ -36,14 +44,6 @@ namespace Chimer
                 }
                 catch(Exception e) {
                     throw new ValidationException("Could not load sound file " + keyValue.Value, e);
-                }
-            }
-
-            foreach (var keyValue in c.zones)
-            {
-                if (keyValue.Value < 0 || keyValue.Value > c.channels)
-                {
-                    throw new ValidationException("Invalid channel specified for zone " + keyValue.Key + ": " + keyValue.Value);
                 }
             }
 

@@ -9,7 +9,6 @@
     {
         public float[] AudioData { get; private set; }
         public WaveFormat WaveFormat { get; private set; }
-        public string Warning { get; private set; }
         private string file;
 
         public CachedSound(string audioFileName)
@@ -41,7 +40,7 @@
             // So we mark it and warn the user.
             if (destSamplesPerSourceSample != Math.Floor(destSamplesPerSourceSample))
             {
-                Warning = "WARNING: All sounds must have a sample rate of 44100Hz.  " + file + " was " + srcFormat.SampleRate + "Hz instead.  It was automatically converted to 44100, but some distortion may result.  Consider using Audacity (or similar) to convert the file to 44100Hz.";
+                Logger.Log("WARNING: All sounds must have a sample rate of 44100Hz.  " + file + " was " + srcFormat.SampleRate + "Hz instead.  It was automatically converted to 44100, but some distortion may result.  Consider using Audacity (or similar) to convert the file to 44100Hz.");
             }
 
             int destSampleCount = (int)Math.Floor(srcSampleCount * destSamplesPerSourceSample);

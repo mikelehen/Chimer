@@ -22,15 +22,16 @@
         private AudioPlaybackEngine engine = null;
         private Dictionary<string, CachedSound> cachedSounds = new Dictionary<string, CachedSound>();
         private ChimeScheduler scheduler = null;
-        private StreamWriter logWriter = null;
 
         public MainWindow()
         {
             InitializeComponent();
+
+            Logger.MessageLogged += (s, message) => this.AddToStatusText(message);
+
             txtConfigFile.Text = Paths.ConfigFile;
 
-            logWriter = new StreamWriter(Paths.LogFile, append: true);
-            LogStatus("Chimer started.");
+            Logger.Log("Chimer started.");
 
             this.Closed += (s, e) =>
             {
@@ -57,7 +58,7 @@
 
         private void LoadConfig()
         {
-            LogStatus("Loading configuration from " + Paths.ConfigFile);
+            Logger.Log("Loading configuration from " + Paths.ConfigFile);
 
             // Hack.  Dispatch this so the loading message shows up before we start
             // loading the config, which can take a couple seconds (reading in the audio files).
@@ -78,11 +79,11 @@
                 InitializeWithConfig(newConfig);
 
                 currentConfig = newConfig;
-                LogStatus("Successfully loaded " + Paths.ConfigFile);
+                Logger.Log("Successfully loaded " + Paths.ConfigFile);
             }
             catch (Exception e)
             {
-                LogStatus("Failed to use configuration: " + e.Message + "\r\n\r\n" + e.ToString());
+                Logger.Log("Failed to use configuration: " + e.Message + "\r\n\r\n" + e.ToString());
                 // Try to get back to a good state.
                 if (currentConfig != null)
                 {
@@ -108,17 +109,13 @@
                 engine.Dispose();
                 engine = null;
             }
-            engine = new AudioPlaybackEngine(44100, config.channels);
+            engine = new AudioPlaybackEngine(44100, config.device);
 
             cachedSounds.Clear();
             foreach (var kvp in config.sounds)
             {
                 var cachedSound = new CachedSound(kvp.Value);
                 cachedSounds[kvp.Key] = cachedSound;
-                if (cachedSound.Warning != null)
-                {
-                    LogStatus(cachedSound.Warning);
-                }
             }
 
             if (scheduler != null)
@@ -159,7 +156,7 @@
         private void playChime(string zone, string sound)
         {
             engine.PlaySound(cachedSounds[sound], currentConfig.zones[zone]);
-            LogStatus("Played '" + sound + "' for '" + zone + "'.");
+            Logger.Log("Played '" + sound + "' for '" + zone + "'.");
         }
 
         private void btnReload_Click(object sender, RoutedEventArgs e)
@@ -167,14 +164,9 @@
             LoadConfig();
         }
 
-        private void LogStatus(string text)
+        private void AddToStatusText(string text)
         {
-            string message = DateTime.Now.ToString() + ": " + text + "\r\n";
-
-            logWriter.Write(message);
-            logWriter.Flush();
-
-            string newStatusText = txtStatus.Text + message;
+            string newStatusText = txtStatus.Text + text;
             if (newStatusText.Length > STATUS_THRESHOLD)
             {
                 newStatusText = newStatusText.Substring(newStatusText.Length - STATUS_THRESHOLD);

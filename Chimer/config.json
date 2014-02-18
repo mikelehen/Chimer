@@ -1,19 +1,25 @@
 ﻿{
   /* 
-    The number of channels your Sound Card has.  For a 7.1 Surround card, use 8.
-    For 5.1, use 6.  For stereo, use 2. 
+    The playback device you want to use.  If you want to use a playback device
+    other than your system default, you can specify it here using its ID, which
+    you can get from the "AVAILABLE SOUND DEVICES" section in the status console.
+    For example:
+
+    "device": "{0.0.0.00000000}.{6609728c-b92b-4d4b-b38e-45962f41c5d3}",
+
+    Leave it blank to use the default device.
   */
-  "channels": 8,
+  "device": "",
 
   /* 
     Zones are basically just friendly names you can assign to your sound card
-    output channels to help you remember what they're for.  You can change 
-    "zone 0", "zone 1", etc. to whatever you like.
+    output channels (i.e. your speakers) to help you remember what they're for.
+    You can change "zone 0", "zone 1", etc. to whatever you like.
 
     For a 7.1 surround card, the channel numbers probably correspond to the 
     following speakers (but no promises):
-      0 - Front left
-      1 - Front right
+      0 - front left
+      1 - front right
       2 - center
       3 - bass
       4 - back left
@@ -67,7 +73,7 @@
       "zones": ["zone 1"],
       "days": ["tuesday", "thursday"],
       "times": ["10:00AM", "12:00PM"],
-      "sound": "chime"
+      "sound": "fancy chime"
     }
   ]
 }

@@ -59,6 +59,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Logger.cs" />
     <Compile Include="Paths.cs" />
     <Compile Include="Scheduler\ScheduledChime.cs" />
     <Page Include="ConfigFileErrorDialog.xaml">
