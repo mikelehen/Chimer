@@ -15,12 +15,8 @@ namespace Chimer
             Config c = JsonConvert.DeserializeObject<Config>(json);
 
             // Do some sanitization before we validate.
-            if (c.device != null)
-            {
-                c.device = c.device.Trim();
-                if (c.device == "")
-                    c.device = null;
-            }
+            c.outputDevice = SanitizeDeviceId(c.outputDevice);
+            c.inputDevice = SanitizeDeviceId(c.inputDevice);
             if (c.sounds == null)
                 c.sounds = new System.Collections.Generic.Dictionary<string, string>();
             if (c.zones == null)
@@ -31,6 +27,17 @@ namespace Chimer
             ValidateConfig(c);
             c.RawText = json;
             return c;
+        }
+
+        private static string SanitizeDeviceId(string deviceId)
+        {
+            if (deviceId != null)
+            {
+                deviceId = deviceId.Trim();
+                if (deviceId == "")
+                    deviceId = null;
+            }
+            return deviceId;
         }
 
         private static void ValidateConfig(Config c)

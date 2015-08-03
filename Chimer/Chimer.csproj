@@ -75,7 +75,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Audio\AudioPlaybackEngine.cs" />
+    <Compile Include="Audio\AudioEngine.cs" />
     <Compile Include="Audio\CachedSound.cs" />
     <Compile Include="Audio\CachedSoundSampleProvider.cs" />
     <Compile Include="Scheduler\ChimeScheduler.cs" />

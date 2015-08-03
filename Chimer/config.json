@@ -1,15 +1,27 @@
 ﻿{
   /* 
-    The playback device you want to use.  If you want to use a playback device
+    The output device you want to use.  If you want to use an output device
     other than your system default, you can specify it here using its ID, which
-    you can get from the "AVAILABLE SOUND DEVICES" section in the status console.
+    you can get from the "AVAILABLE OUTPUT DEVICES" section in the status console.
     For example:
 
     "device": "{0.0.0.00000000}.{6609728c-b92b-4d4b-b38e-45962f41c5d3}",
 
     Leave it blank to use the default device.
   */
-  "device": "",
+  "outputDevice": "",
+
+    /* 
+    The input device you want to use.  If you want to use an input device
+    other than your system default, you can specify it here using its ID, which
+    you can get from the "AVAILABLE INPUT DEVICES" section in the status console.
+    For example:
+
+    "device": "{0.0.0.00000000}.{6609728c-b92b-4d4b-b38e-45962f41c5d3}",
+
+    Leave it blank to use the default device.
+  */
+  "inputDevice": "",
 
   /* 
     Zones are basically just friendly names you can assign to your sound card
@@ -35,7 +47,7 @@
     "zone 4": 4,
     "zone 5": 5,
     "zone 6": 6,
-    "zone 7": 7,
+    "zone 7": 7
   },
 
   /*

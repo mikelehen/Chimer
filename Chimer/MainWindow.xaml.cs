@@ -19,7 +19,7 @@
     {
         private const int STATUS_THRESHOLD = 10000000; // characters to keep in the status box.
         private Config currentConfig = null;
-        private AudioPlaybackEngine engine = null;
+        private AudioEngine engine = null;
         private Dictionary<string, CachedSound> cachedSounds = new Dictionary<string, CachedSound>();
         private ChimeScheduler scheduler = null;
 
@@ -109,7 +109,7 @@
                 engine.Dispose();
                 engine = null;
             }
-            engine = new AudioPlaybackEngine(44100, config.device);
+            engine = new AudioEngine(44100, config.inputDevice, config.outputDevice);
 
             cachedSounds.Clear();
             foreach (var kvp in config.sounds)
