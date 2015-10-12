@@ -16,8 +16,8 @@
         public AudioEngine(int sampleRate = 44100, string inputDeviceId = null, string outputDeviceId = null)
         {
             LogAvailableDevices();
-            var outputDevice = getDeviceForId(outputDeviceId);
-            var inputDevice = getDeviceForId(inputDeviceId);
+            var outputDevice = getDeviceForId(outputDeviceId, DataFlow.Render);
+            var inputDevice = getDeviceForId(inputDeviceId, DataFlow.Capture);
             Logger.Log("Using " + (outputDeviceId == null ? "default" : "configured") + 
                 " audio device " + outputDevice.ID + " (" + outputDevice.FriendlyName + ") for output.");
             Logger.Log("Using " + (inputDeviceId == null ? "default" : "configured") +
@@ -87,12 +87,12 @@
             Logger.Log(b.ToString());
         }
 
-        private MMDevice getDeviceForId(string id)
+        private MMDevice getDeviceForId(string id, DataFlow dataFlow)
         {
             var deviceEnumerator = new MMDeviceEnumerator();
             if (id == null)
             {
-                return deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                return deviceEnumerator.GetDefaultAudioEndpoint(dataFlow, Role.Multimedia);
             }
             else
             {
