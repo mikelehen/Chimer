@@ -21,6 +21,17 @@ namespace Chimer.Scheduler
             targetDispatcher = Dispatcher.CurrentDispatcher;
             makeEnumerators(c);
 
+            timer.AutoReset = false;
+            timer.Elapsed += (s, e) =>
+            {
+                Console.WriteLine("Chiming at " + DateTime.Now.ToShortTimeString());
+                targetDispatcher.InvokeAsync(() =>
+                {
+                    fireChimesAndReschedule();
+                });
+            };
+
+            // Do initial scheduling.
             fireChimesAndReschedule();
         }
 
@@ -66,15 +77,7 @@ namespace Chimer.Scheduler
             timer.Stop();
             if (nextChimeTime != DateTime.MaxValue)
             {
-                timer.AutoReset = false;
                 timer.Interval = (nextChimeTime - now).TotalMilliseconds;
-                timer.Elapsed += (s, e) =>
-                {
-                    targetDispatcher.InvokeAsync(() =>
-                    {
-                        fireChimesAndReschedule();
-                    });
-                };
                 timer.Start();
             }
 
@@ -104,36 +107,32 @@ namespace Chimer.Scheduler
             }
         }
 
-        private DateTime getFirstInstanceInTheFuture(DayOfWeek day, string timeString)
+        private static DateTime getFirstInstanceInTheFuture(DayOfWeek day, string timeString)
         {
-            DateTime d = DateTime.Today;
-            while (d.DayOfWeek != day)
+            DateTime target = DateTime.Parse(timeString);
+            target = target.AddDays(daysBetween(target.DayOfWeek, day));
+            if (target < DateTime.Now)
             {
-                d = d.Subtract(TimeSpan.FromDays(1));
+                // It must have been today and the time is already passed.  Skip to next week.
+                target = target.AddDays(7);
             }
-
-            DateTime time = DateTime.Parse(timeString);
-            d = d.AddHours(time.Hour);
-            d = d.AddMinutes(time.Minute);
-            d = d.AddSeconds(time.Second);
-
-            // Now fast-forward to the future!
-            while (d < DateTime.Now)
-            {
-                d = d.AddDays(7);
-            }
-            return d;
+            return target;
         }
 
-        struct GeneratorState
+        private static int daysBetween(DayOfWeek from, DayOfWeek to)
         {
-            public IEnumerator<ScheduledChime> Enumerator;
-            public DateTime Next;
+            int days = to - from;
+            if (days < 0)
+            {
+                days += 7;
+            }
+            return days;
         }
 
         public void Dispose()
         {
             timer.Stop();
+            timer.Close();
         }
     }
 }
