@@ -11,6 +11,7 @@
     using System.Windows;
     using System.Linq;
     using System.Windows.Threading;
+    using System.Windows.Data;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -144,7 +145,14 @@
             ZoneCombo.Items.Clear();
             if (config.zones.Count > 0)
             {
-                ZoneCombo.ItemsSource = config.zones.Keys;
+                CompositeCollection zoneCompositeCollection = new CompositeCollection();
+                zoneCompositeCollection.Add("All");
+
+                CollectionContainer zones = new CollectionContainer();
+                zones.Collection = config.zones.Keys;
+                zoneCompositeCollection.Add(zones);
+
+                ZoneCombo.ItemsSource = zoneCompositeCollection;
             }
             else
             {
@@ -177,10 +185,20 @@
 
         private void PlayChime_Click(object sender, RoutedEventArgs e)
         {
-            string zone = ZoneCombo.SelectedValue.ToString();
             string sound = SoundCombo.SelectedValue.ToString();
-            if (currentConfig.zones.ContainsKey(zone) && currentConfig.sounds.ContainsKey(sound))
+            Debug.Assert(currentConfig.sounds.ContainsKey(sound));
+
+            string zone = ZoneCombo.SelectedValue.ToString();
+            if (zone == "All")
             {
+                foreach (var zoneNum in currentConfig.zones.Keys)
+                {
+                    playChime(zoneNum, sound);
+                }
+            }
+            else
+            {
+                Debug.Assert(currentConfig.zones.ContainsKey(zone));
                 playChime(zone, sound);
             }
         }
