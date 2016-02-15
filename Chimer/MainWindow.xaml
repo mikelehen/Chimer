@@ -42,7 +42,7 @@
             </StackPanel>
         </GroupBox>
         <GroupBox Header="Status" Grid.Row="2" Grid.Column="1">
-            <TextBox TextWrapping="WrapWithOverflow" IsReadOnly="True" AcceptsReturn="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Name="txtStatus" Grid.Row="2" />
+            <TextBox IsReadOnly="True" AcceptsReturn="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Name="txtStatus" Grid.Row="2" FontFamily="Consolas" FontSize="10.667" />
         </GroupBox>
     </Grid>
 </Window>

@@ -28,11 +28,15 @@
         {
             InitializeComponent();
 
-            Logger.MessageLogged += (s, message) => this.AddToStatusText(message);
+            Logger.MessageLogged += (s, message) =>
+            {
+                this.Dispatcher.BeginInvoke(new Action(() => this.AddToStatusText(message)), DispatcherPriority.Background);
+            };
 
             txtConfigFile.Text = Paths.ConfigFile;
 
             Logger.Log("Chimer started.");
+            AudioEngine.LogAvailableDevices();
 
             this.Closed += (s, e) =>
             {
@@ -110,7 +114,7 @@
                 engine.Dispose();
                 engine = null;
             }
-            engine = new AudioEngine(44100, config.inputDevice, config.outputDevice);
+            engine = new AudioEngine(44100, config.inputDevice, config.outputDevice, config.inputLatency, config.outputLatency, config.inputVolume);
 
             cachedSounds.Clear();
             foreach (var kvp in config.sounds)

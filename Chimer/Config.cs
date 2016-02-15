@@ -12,6 +12,10 @@ namespace Chimer
 
         public string inputDevice;
         public string outputDevice;
+        public int inputLatency;
+        public int outputLatency;
+        public int inputVolume;
+
         public Dictionary<string, string> sounds;
         public Dictionary<string, int> zones;
         public List<ScheduleItem> schedule;

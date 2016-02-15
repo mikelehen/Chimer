@@ -11,7 +11,7 @@
   */
   "outputDevice": "",
 
-    /* 
+  /* 
     The input device you want to use.  If you want to use an input device
     other than your system default, you can specify it here using its ID, which
     you can get from the "AVAILABLE INPUT DEVICES" section in the status console.
@@ -22,6 +22,32 @@
     Leave it blank to use the default device.
   */
   "inputDevice": "",
+
+  /*
+    The desired output latency in milliseconds.  Setting it to a value too low may 
+    cause errors or glitches in playback.
+
+    To specify the desired latency, Chimer must use the device in "exclusive" mode
+    which prevents other applications from playing sound.  Set to 0 to disable and
+    let Windows control the latency.
+  */
+  "outputLatency": 10,
+
+  /*
+    The desired input latency in milliseconds.  Setting it to a value too low may 
+    cause errors or glitches in playback.
+
+    To specify the desired latency, Chimer must use the device in "exclusive" mode
+    which prevents other applications from recording sound.  Set to 0 to disable and
+    let Windows control the latency.
+  */
+  "inputLatency": 5,
+
+  /*
+    Input valume (0 to 100).  Can be set to a value less than 100 to reduce 
+    the input volume.
+  */
+  "inputVolume": 100,
 
   /* 
     Zones are basically just friendly names you can assign to your sound card
@@ -76,15 +102,15 @@
   */
   "schedule": [
     {
-      "zones": ["zone 0", "zone 2"],
-      "days": ["monday", "tuesday", "wednesday", "thursday", "friday"],
-      "times": ["10:00AM", "11:00AM", "12:00PM"],
+      "zones": [ "zone 0", "zone 2" ],
+      "days": [ "monday", "tuesday", "wednesday", "thursday", "friday" ],
+      "times": [ "10:00AM", "11:00AM", "12:00PM" ],
       "sound": "chime"
     },
     {
-      "zones": ["zone 1"],
-      "days": ["tuesday", "thursday"],
-      "times": ["10:00AM", "12:00PM"],
+      "zones": [ "zone 1" ],
+      "days": [ "tuesday", "thursday" ],
+      "times": [ "10:00AM", "12:00PM" ],
       "sound": "fancy chime"
     }
   ]
