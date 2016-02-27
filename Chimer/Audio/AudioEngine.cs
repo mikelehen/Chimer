@@ -5,7 +5,7 @@
     using NAudio.Wave.SampleProviders;
     using System;
     using System.Text;
-    using System.Timers;
+
     class AudioEngine : IDisposable
     {
         private readonly WasapiOut wavePlayer;
@@ -38,15 +38,15 @@
             mixer.ReadFully = true;
             wavePlayer.Init(mixer);
 
-            waveIn = new WasapiCapture(inputDevice, useEventSync: true);
+            waveIn = new WasapiCapture(inputDevice, useEventSync: true, audioBufferMillisecondsLength: inputLatency);
             if (inputLatency == 0)
             {
                 waveIn.ShareMode = AudioClientShareMode.Shared;
-            } else
+            }
+            else
             {
                 waveIn.ShareMode = AudioClientShareMode.Exclusive;
                 waveIn.WaveFormat = new WaveFormatExtensible(44100, 16, 2);
-                waveIn.BufferTime = inputLatency;
             }
 
             waveIn.DataAvailable += onInputDataAvailable;

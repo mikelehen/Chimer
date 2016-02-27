@@ -552,6 +552,11 @@
             Audio Endpoint Volume Channel
             </summary>
         </member>
+        <member name="P:NAudio.CoreAudioApi.AudioEndpointVolumeChannel.NotificationGuid">
+            <summary>
+            GUID to pass to AudioEndpointVolumeCallback
+            </summary>
+        </member>
         <member name="P:NAudio.CoreAudioApi.AudioEndpointVolumeChannel.VolumeLevel">
             <summary>
             Volume Level
@@ -991,6 +996,11 @@
             Muted
             </summary>
         </member>
+        <member name="P:NAudio.CoreAudioApi.AudioVolumeNotificationData.Guid">
+            <summary>
+            Guid that raised the event
+            </summary>
+        </member>
         <member name="P:NAudio.CoreAudioApi.AudioVolumeNotificationData.MasterVolume">
             <summary>
             Master Volume
@@ -1006,7 +1016,7 @@
             Channel Volume
             </summary>
         </member>
-        <member name="M:NAudio.CoreAudioApi.AudioVolumeNotificationData.#ctor(System.Guid,System.Boolean,System.Single,System.Single[])">
+        <member name="M:NAudio.CoreAudioApi.AudioVolumeNotificationData.#ctor(System.Guid,System.Boolean,System.Single,System.Single[],System.Guid)">
             <summary>
             Audio Volume Notification Data
             </summary>
@@ -1014,6 +1024,7 @@
             <param name="muted"></param>
             <param name="masterVolume"></param>
             <param name="channelVolume"></param>
+            <param name="guid"></param>
         </member>
         <member name="F:NAudio.CoreAudioApi.Interfaces.AudioClientErrors.NotInitialized">
             <summary>
@@ -1742,6 +1753,31 @@
             Mute
             </summary>
         </member>
+        <member name="T:NAudio.CoreAudioApi.CaptureState">
+            <summary>
+            Represents state of a capture device
+            </summary>
+        </member>
+        <member name="F:NAudio.CoreAudioApi.CaptureState.Stopped">
+            <summary>
+            Not recording
+            </summary>
+        </member>
+        <member name="F:NAudio.CoreAudioApi.CaptureState.Starting">
+            <summary>
+            Beginning to record
+            </summary>
+        </member>
+        <member name="F:NAudio.CoreAudioApi.CaptureState.Capturing">
+            <summary>
+            Recording in progress
+            </summary>
+        </member>
+        <member name="F:NAudio.CoreAudioApi.CaptureState.Stopping">
+            <summary>
+            Requesting stop
+            </summary>
+        </member>
         <member name="T:NAudio.CoreAudioApi.WasapiCapture">
             <summary>
             Audio Capture using Wasapi
@@ -1776,19 +1812,27 @@
             <param name="captureDevice">The capture device.</param>
             <param name="useEventSync">true if sync is done with event. false use sleep.</param>
         </member>
+        <member name="M:NAudio.CoreAudioApi.WasapiCapture.#ctor(NAudio.CoreAudioApi.MMDevice,System.Boolean,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NAudio.CoreAudioApi.WasapiCapture" /> class.
+            </summary>
+            <param name="captureDevice">The capture device.</param>
+            <param name="useEventSync">true if sync is done with event. false use sleep.</param>
+            <param name="audioBufferMillisecondsLength">Length of the audio buffer in milliseconds. A lower value means lower latency but increased CPU usage.</param>
+        </member>
         <member name="P:NAudio.CoreAudioApi.WasapiCapture.ShareMode">
             <summary>
             Share Mode - set before calling StartRecording
             </summary>
         </member>
-        <member name="P:NAudio.CoreAudioApi.WasapiCapture.BufferTime">
+        <member name="P:NAudio.CoreAudioApi.WasapiCapture.CaptureState">
             <summary>
-            Time in ms for buffer size.
+            Current Capturing State
             </summary>
         </member>
         <member name="P:NAudio.CoreAudioApi.WasapiCapture.WaveFormat">
             <summary>
-            Recording wave format
+            Capturing wave format
             </summary>
         </member>
         <member name="M:NAudio.CoreAudioApi.WasapiCapture.GetDefaultCaptureDevice">
@@ -1804,12 +1848,12 @@
         </member>
         <member name="M:NAudio.CoreAudioApi.WasapiCapture.StartRecording">
             <summary>
-            Start Recording
+            Start Capturing
             </summary>
         </member>
         <member name="M:NAudio.CoreAudioApi.WasapiCapture.StopRecording">
             <summary>
-            Stop Recording (requests a stop, wait for RecordingStopped event to know it has finished)
+            Stop Capturing (requests a stop, wait for RecordingStopped event to know it has finished)
             </summary>
         </member>
         <member name="M:NAudio.CoreAudioApi.WasapiCapture.Dispose">
@@ -1820,6 +1864,11 @@
         <member name="T:NAudio.CoreAudioApi.AudioEndpointVolume">
             <summary>
             Audio Endpoint Volume
+            </summary>
+        </member>
+        <member name="P:NAudio.CoreAudioApi.AudioEndpointVolume.NotificationGuid">
+            <summary>
+            GUID to pass to AudioEndpointVolumeCallback
             </summary>
         </member>
         <member name="E:NAudio.CoreAudioApi.AudioEndpointVolume.OnVolumeNotification">
@@ -2143,6 +2192,15 @@
             </summary>
             <param name="client">Object implementing IMMNotificationClient type casted as IMMNotificationClient interface </param>
             <returns></returns>
+        </member>
+        <member name="M:NAudio.CoreAudioApi.MMDeviceEnumerator.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="M:NAudio.CoreAudioApi.MMDeviceEnumerator.Dispose(System.Boolean)">
+            <summary>
+            Called to dispose/finalize contained objects.
+            </summary>
+            <param name="disposing">True if disposing, false if called from a finalizer.</param>
         </member>
         <member name="T:NAudio.CoreAudioApi.PropertyStore">
             <summary>
@@ -9872,9 +9930,9 @@
             <summary>
             Creates a Note On message
             </summary>
-            <param name="note">Note number</param>
-            <param name="volume">Volume</param>
-            <param name="channel">MIDI channel</param>
+            <param name="note">Note number (0 to 127)</param>
+            <param name="volume">Volume (0 to 127)</param>
+            <param name="channel">MIDI channel (1 to 16)</param>
             <returns>A new MidiMessage object</returns>
         </member>
         <member name="M:NAudio.Midi.MidiMessage.StopNote(System.Int32,System.Int32,System.Int32)">
@@ -9882,7 +9940,7 @@
             Creates a Note Off message
             </summary>
             <param name="note">Note number</param>
-            <param name="volume">Volume</param>
+            <param name="volume">Volume </param>
             <param name="channel">MIDI channel (1-16)</param>
             <returns>A new MidiMessage object</returns>
         </member>
@@ -10275,7 +10333,7 @@
         </member>
         <member name="P:NAudio.Midi.PitchWheelChangeEvent.Pitch">
             <summary>
-            Pitch Wheel Value 0 is minimum, 0x2000 (8192) is default, 0x4000 (16384) is maximum
+            Pitch Wheel Value 0 is minimum, 0x2000 (8192) is default, 0x3FFF (16383) is maximum
             </summary>
         </member>
         <member name="M:NAudio.Midi.PitchWheelChangeEvent.GetAsShortMessage">
@@ -10500,11 +10558,6 @@
             <param name="denominator">Denominator</param>
             <param name="ticksInMetronomeClick">Ticks in Metronome Click</param>
             <param name="no32ndNotesInQuarterNote">No of 32nd Notes in Quarter Click</param>
-        </member>
-        <member name="M:NAudio.Midi.TimeSignatureEvent.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int64)">
-            <summary>
-            Creates a new time signature event with the specified parameters
-            </summary>
         </member>
         <member name="P:NAudio.Midi.TimeSignatureEvent.Numerator">
             <summary>
@@ -12015,6 +12068,27 @@
             The output WaveFormat
             </summary>
         </member>
+        <member name="T:NAudio.Wave.SampleProviders.ConcatenatingSampleProvider">
+            <summary>
+            Sample Provider to concatenate multiple sample providers together
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.ConcatenatingSampleProvider.#ctor(System.Collections.Generic.IEnumerable{NAudio.Wave.ISampleProvider})">
+            <summary>
+            Creates a new ConcatenatingSampleProvider
+            </summary>
+            <param name="providers">The source providers to play one after the other. Must all share the same sample rate and channel count</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.ConcatenatingSampleProvider.WaveFormat">
+            <summary>
+            The WaveFormat of this Sample Provider
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.ConcatenatingSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Read Samples from this sample provider
+            </summary>
+        </member>
         <member name="T:NAudio.Wave.SampleProviders.FadeInOutSampleProvider">
             <summary>
             Sample Provider to allow fading in and out
@@ -12396,6 +12470,37 @@
         <member name="F:NAudio.Wave.SampleProviders.SignalGeneratorType.SawTooth">
             <summary>
             Sawtooth wave
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SampleProviders.StereoToMonoSampleProvider">
+            <summary>
+            Takes a stereo input and turns it to mono
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.StereoToMonoSampleProvider.#ctor(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Creates a new mono ISampleProvider based on a stereo input
+            </summary>
+            <param name="sourceProvider">Stereo 16 bit PCM input</param>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.StereoToMonoSampleProvider.LeftVolume">
+            <summary>
+            1.0 to mix the mono source entirely to the left channel
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.StereoToMonoSampleProvider.RightVolume">
+            <summary>
+            1.0 to mix the mono source entirely to the right channel
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.StereoToMonoSampleProvider.WaveFormat">
+            <summary>
+            Output Wave Format
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SampleProviders.StereoToMonoSampleProvider.Read(System.Single[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this SampleProvider
             </summary>
         </member>
         <member name="T:NAudio.Wave.SampleProviders.WaveToSampleProvider64">
@@ -12825,6 +12930,16 @@
             <param name="count">Number of samples required</param>
             <returns>Number of samples read</returns>
         </member>
+        <member name="P:NAudio.Wave.SampleProviders.MonoToStereoSampleProvider.LeftVolume">
+            <summary>
+            Multiplier for left channel (default is 1.0)
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SampleProviders.MonoToStereoSampleProvider.RightVolume">
+            <summary>
+            Multiplier for right channel (default is 1.0)
+            </summary>
+        </member>
         <member name="T:NAudio.Wave.SampleProviders.WaveToSampleProvider">
             <summary>
             Helper class turning an already 32 bit floating point IWaveProvider
@@ -12973,6 +13088,78 @@
             <param name="wavePlayer">The WavePlayer</param>
             <param name="sampleProvider"></param>
             <param name="convertTo16Bit"></param>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.AsStandardWaveFormat(NAudio.Wave.WaveFormat)">
+            <summary>
+            Turns WaveFormatExtensible into a standard waveformat if possible
+            </summary>
+            <param name="waveFormat">Input wave format</param>
+            <returns>A standard PCM or IEEE waveformat, or the original waveformat</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.ToWaveProvider(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Converts a ISampleProvider to a IWaveProvider but still 32 bit float
+            </summary>
+            <param name="sampleProvider">SampleProvider to convert</param>
+            <returns>An IWaveProvider</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.ToWaveProvider16(NAudio.Wave.ISampleProvider)">
+            <summary>
+            Converts a ISampleProvider to a IWaveProvider but and convert to 16 bit
+            </summary>
+            <param name="sampleProvider">SampleProvider to convert</param>
+            <returns>A 16 bit IWaveProvider</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.FollowedBy(NAudio.Wave.ISampleProvider,NAudio.Wave.ISampleProvider)">
+            <summary>
+            Concatenates one Sample Provider on the end of another
+            </summary>
+            <param name="sampleProvider">The sample provider to play first</param>
+            <param name="next">The sample provider to play next</param>
+            <returns>A single sampleprovider to play one after the other</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.FollowedBy(NAudio.Wave.ISampleProvider,System.TimeSpan,NAudio.Wave.ISampleProvider)">
+            <summary>
+            Concatenates one Sample Provider on the end of another with silence inserted
+            </summary>
+            <param name="sampleProvider">The sample provider to play first</param>
+            <param name="silenceDuration">Silence duration to insert between the two</param>
+            <param name="next">The sample provider to play next</param>
+            <returns>A single sample provider</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.Skip(NAudio.Wave.ISampleProvider,System.TimeSpan)">
+            <summary>
+            Skips over a specified amount of time (by consuming source stream)
+            </summary>
+            <param name="sampleProvider">Source sample provider</param>
+            <param name="skipDuration">Duration to skip over</param>
+            <returns>A sample provider that skips over the specified amount of time</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.Take(NAudio.Wave.ISampleProvider,System.TimeSpan)">
+            <summary>
+            Takes a specified amount of time from the source stream
+            </summary>
+            <param name="sampleProvider">Source sample provider</param>
+            <param name="takeDuration">Duration to take</param>
+            <returns>A sample provider that reads up to the specified amount of time</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.ToMono(NAudio.Wave.ISampleProvider,System.Single,System.Single)">
+            <summary>
+            Converts a Stereo Sample Provider to mono, allowing mixing of channel volume
+            </summary>
+            <param name="sourceProvider">Stereo Source Provider</param>
+            <param name="leftVol">Amount of left channel to mix in (0 = mute, 1 = full, 0.5 for mixing half from each channel)</param>
+            <param name="rightVol">Amount of right channel to mix in (0 = mute, 1 = full, 0.5 for mixing half from each channel)</param>
+            <returns>A mono SampleProvider</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveExtensionMethods.ToStereo(NAudio.Wave.ISampleProvider,System.Single,System.Single)">
+            <summary>
+            Converts a Mono ISampleProvider to stereo
+            </summary>
+            <param name="sourceProvider">Mono Source Provider</param>
+            <param name="leftVol">Amount to mix to left channel (1.0 is full volume)</param>
+            <param name="rightVol">Amount to mix to right channel (1.0 is full volume)</param>
+            <returns></returns>
         </member>
         <member name="T:NAudio.Wave.WaveInEvent">
             <summary>
@@ -13538,7 +13725,7 @@
         </member>
         <member name="P:NAudio.Wave.WasapiLoopbackCapture.WaveFormat">
             <summary>
-            Recording wave format
+            Capturing wave format
             </summary>
         </member>
         <member name="M:NAudio.Wave.WasapiLoopbackCapture.GetAudioClientStreamFlags">
@@ -14962,6 +15149,7 @@
             <summary>
             WaveFormatExtensible for PCM or floating point can be awkward to work with
             This creates a regular WaveFormat structure representing the same audio format
+            Returns the WaveFormat unchanged for non PCM or IEEE float
             </summary>
             <returns></returns>
         </member>
@@ -14980,6 +15168,13 @@
             <summary>
             String representation
             </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatExtensible.channelMaskForChannels(System.Int32)">
+            <summary>
+            Picks a channel mask for a specified number of channels.
+            </summary>
+            <param name="channels">Number of channels.</param>
+            <returns>Channel Mask</returns>
         </member>
         <member name="T:NAudio.Wave.WaveFormatExtraData">
             <summary>
@@ -15952,6 +16147,11 @@
             Playback Stopped
             </summary>
         </member>
+        <member name="M:NAudio.Wave.WasapiOut.#ctor">
+            <summary>
+            WASAPI Out shared mode, defauult
+            </summary>
+        </member>
         <member name="M:NAudio.Wave.WasapiOut.#ctor(NAudio.CoreAudioApi.AudioClientShareMode,System.Int32)">
             <summary>
             WASAPI Out using default audio endpoint
@@ -15974,7 +16174,7 @@
             <param name="device">Device to use</param>
             <param name="shareMode"></param>
             <param name="useEventSync">true if sync is done with event. false use sleep.</param>
-            <param name="latency"></param>
+            <param name="latency">Desired latency in milliseconds</param>
         </member>
         <member name="M:NAudio.Wave.WasapiOut.GetPosition">
             <summary>
@@ -16365,6 +16565,7 @@
         <member name="M:NAudio.Wave.WaveFileWriter.Flush">
             <summary>
             Ensures data is written to disk
+            Also updates header, so that WAV file will be valid up to the point currently written
             </summary>
         </member>
         <member name="M:NAudio.Wave.WaveFileWriter.Dispose(System.Boolean)">
@@ -16619,6 +16820,12 @@
             </summary>
             <param name="waveFormat">WaveFormat</param>
         </member>
+        <member name="P:NAudio.Wave.BufferedWaveProvider.ReadFully">
+            <summary>
+            If true, always read the amount of data requested, padding with zeroes if necessary
+            By default is set to true
+            </summary>
+        </member>
         <member name="P:NAudio.Wave.BufferedWaveProvider.BufferLength">
             <summary>
             Buffer length in bytes
@@ -16809,6 +17016,28 @@
         <member name="P:NAudio.Wave.MultiplexingWaveProvider.OutputChannelCount">
             <summary>
             The number of output channels, as specified in the constructor.
+            </summary>
+        </member>
+        <member name="T:NAudio.Wave.SilenceProvider">
+            <summary>
+            Silence producing wave provider
+            Useful for playing silence when doing a WASAPI Loopback Capture
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.SilenceProvider.#ctor(NAudio.Wave.WaveFormat)">
+            <summary>
+            Creates a new silence producing wave provider
+            </summary>
+            <param name="wf">Desired WaveFormat (should be PCM / IEE float</param>
+        </member>
+        <member name="M:NAudio.Wave.SilenceProvider.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Read silence from into the buffer
+            </summary>
+        </member>
+        <member name="P:NAudio.Wave.SilenceProvider.WaveFormat">
+            <summary>
+            WaveFormat of this silence producing wave provider
             </summary>
         </member>
         <member name="T:NAudio.Wave.StereoToMonoProvider16">
@@ -17681,6 +17910,15 @@
             <param name="sourceStream">The source stream containing raw audio</param>
             <param name="waveFormat">The waveformat of the audio in the source stream</param>
         </member>
+        <member name="M:NAudio.Wave.RawSourceWaveStream.#ctor(System.Byte[],System.Int32,System.Int32,NAudio.Wave.WaveFormat)">
+            <summary>
+            Initialises a new instance of RawSourceWaveStream
+            </summary>
+            <param name="byteStream">The buffer containing raw audio</param>
+            <param name="offset">Offset in the source buffer to read from</param>
+            <param name="count">Number of bytes to read in the buffer</param>
+            <param name="waveFormat">The waveformat of the audio in the source stream</param>
+        </member>
         <member name="P:NAudio.Wave.RawSourceWaveStream.WaveFormat">
             <summary>
             The WaveFormat of this stream
@@ -18086,10 +18324,64 @@
             </summary>
             <returns>False if the end of the WAV data chunk was reached</returns>
         </member>
+        <member name="T:NAudio.Wave.WaveFormatConversionProvider">
+            <summary>
+            IWaveProvider that passes through an ACM Codec
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatConversionProvider.#ctor(NAudio.Wave.WaveFormat,NAudio.Wave.IWaveProvider)">
+            <summary>
+            Create a new WaveFormat conversion stream
+            </summary>
+            <param name="targetFormat">Desired output format</param>
+            <param name="sourceProvider">Source Provider</param>
+        </member>
+        <member name="P:NAudio.Wave.WaveFormatConversionProvider.WaveFormat">
+            <summary>
+            Gets the WaveFormat of this stream
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatConversionProvider.Reposition">
+            <summary>
+            Indicates that a reposition has taken place, and internal buffers should be reset
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatConversionProvider.Read(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            Reads bytes from this stream
+            </summary>
+            <param name="buffer">Buffer to read into</param>
+            <param name="offset">Offset in buffer to read into</param>
+            <param name="count">Number of bytes to read</param>
+            <returns>Number of bytes read</returns>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatConversionProvider.Dispose(System.Boolean)">
+            <summary>
+            Disposes this stream
+            </summary>
+            <param name="disposing">true if the user called this</param>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatConversionProvider.Dispose">
+            <summary>
+            Disposes this resource
+            </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatConversionProvider.Finalize">
+            <summary>
+            Finalizer
+            </summary>
+        </member>
         <member name="T:NAudio.Wave.WaveFormatConversionStream">
             <summary>
             WaveStream that passes through an ACM Codec
             </summary>
+        </member>
+        <member name="M:NAudio.Wave.WaveFormatConversionStream.#ctor(NAudio.Wave.WaveFormat,NAudio.Wave.WaveStream)">
+            <summary>
+            Create a new WaveFormat conversion stream
+            </summary>
+            <param name="targetFormat">Desired output format</param>
+            <param name="sourceStream">Source stream</param>
         </member>
         <member name="M:NAudio.Wave.WaveFormatConversionStream.CreatePcmStream(NAudio.Wave.WaveStream)">
             <summary>
@@ -18098,12 +18390,10 @@
             <param name="sourceStream">The source stream</param>
             <returns>A PCM stream</returns>
         </member>
-        <member name="M:NAudio.Wave.WaveFormatConversionStream.#ctor(NAudio.Wave.WaveFormat,NAudio.Wave.WaveStream)">
+        <member name="P:NAudio.Wave.WaveFormatConversionStream.Position">
             <summary>
-            Create a new WaveFormat conversion stream
+            Gets or sets the current position in the stream
             </summary>
-            <param name="targetFormat">Desired output format</param>
-            <param name="sourceStream">Source stream</param>
         </member>
         <member name="M:NAudio.Wave.WaveFormatConversionStream.SourceToDest(System.Int32)">
             <summary>
@@ -18120,11 +18410,6 @@
             Returns the stream length
             </summary>
         </member>
-        <member name="P:NAudio.Wave.WaveFormatConversionStream.Position">
-            <summary>
-            Gets or sets the current position in the stream
-            </summary>
-        </member>
         <member name="P:NAudio.Wave.WaveFormatConversionStream.WaveFormat">
             <summary>
             Gets the WaveFormat of this stream
@@ -18132,12 +18417,12 @@
         </member>
         <member name="M:NAudio.Wave.WaveFormatConversionStream.Read(System.Byte[],System.Int32,System.Int32)">
             <summary>
-            Reads bytes from this stream
+            
             </summary>
             <param name="buffer">Buffer to read into</param>
-            <param name="offset">Offset in buffer to read into</param>
+            <param name="offset">Offset within buffer to write to</param>
             <param name="count">Number of bytes to read</param>
-            <returns>Number of bytes read</returns>
+            <returns>Bytes read</returns>
         </member>
         <member name="M:NAudio.Wave.WaveFormatConversionStream.Dispose(System.Boolean)">
             <summary>
