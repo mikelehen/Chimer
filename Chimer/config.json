@@ -44,10 +44,16 @@
   "inputLatency": 5,
 
   /*
-    Input valume (0 to 100).  Can be set to a value less than 100 to reduce 
+    Input volume (0 to 100).  Can be set to a value less than 100 to reduce 
     the input volume.
   */
   "inputVolume": 100,
+
+  /*
+    Input threshold (0 to 100).  Input will be muted if the volume is below the
+    threshold, to prevent background noise.
+  */
+  "inputThreshold": 5,
 
   /* 
     Zones are basically just friendly names you can assign to your sound card

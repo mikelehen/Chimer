@@ -6,6 +6,12 @@
     using System;
     using System.Text;
 
+    struct InputStatus
+    {
+        public int Volume;
+        public bool Muted;
+    }
+
     class AudioEngine : IDisposable
     {
         private readonly WasapiOut wavePlayer;
@@ -14,7 +20,10 @@
         private readonly BufferedWaveProvider passThruBufferedProvider;
         private readonly int outputLatency;
 
-        public AudioEngine(int sampleRate = 44100, string inputDeviceId = null, string outputDeviceId = null, int inputLatency = 0, int outputLatency = 0, int inputVolume = 100)
+        // Delay to wait after the input threshold was last exceeded before re-muting.
+        private const int INPUT_MUTE_DELAY_SECONDS = 5;
+
+        public AudioEngine(int sampleRate = 44100, string inputDeviceId = null, string outputDeviceId = null, int inputLatency = 0, int outputLatency = 0, int inputVolume = 100, int inputThreshold = 5)
         {
             var outputDevice = getDeviceForId(outputDeviceId, DataFlow.Render);
             var inputDevice = getDeviceForId(inputDeviceId, DataFlow.Capture);
@@ -53,9 +62,19 @@
 
             passThruBufferedProvider = new BufferedWaveProvider(waveIn.WaveFormat);
             SampleChannel inputChannel = new SampleChannel(passThruBufferedProvider);
-            inputChannel.Volume = inputVolume / 100.0f;
+
+            MutingSampleProvider mutedInputChannel = new MutingSampleProvider(inputChannel, 
+                inputThreshold / 100.0f, inputVolume / 100.0f, TimeSpan.FromSeconds(INPUT_MUTE_DELAY_SECONDS));
+            mutedInputChannel.VolumeMeter += (sender, volume) => {
+                if (InputStatusChange != null)
+                {
+                    var inputState = new InputStatus() { Muted = mutedInputChannel.IsMuted, Volume = (int)(100 * volume) };
+                    InputStatusChange(this, inputState);
+                }
+            };
+
             MultiplexingSampleProvider multiplexer = new MultiplexingSampleProvider(
-                new ISampleProvider[] { inputChannel }, 
+                new ISampleProvider[] { mutedInputChannel },
                 channels);
             for(int i = 0; i < channels; i++)
             {
@@ -63,9 +82,15 @@
             }
             mixer.AddMixerInput(multiplexer);
 
-            waveIn.StartRecording();
+            if (inputVolume > 0)
+            {
+                waveIn.StartRecording();
+            }
+
             wavePlayer.Play();
         }
+
+        public event EventHandler<InputStatus> InputStatusChange;
 
         private DateTime lastSkipMessage = DateTime.MinValue;
         private void onInputDataAvailable(object sender, WaveInEventArgs e)
@@ -79,7 +104,7 @@
             {
                 if (DateTime.Now.Subtract(lastSkipMessage).TotalMilliseconds > 500)
                 {
-                    Logger.Log("Skipping pass-thru input samples to let output catch up. If you see this constantly, you may want to increase your outputLatency.");
+                    Logger.Log("Skipping pass-through input samples to let output catch up. If you see this constantly, you may want to increase your outputLatency.");
                     lastSkipMessage = DateTime.Now;
                 }
             }

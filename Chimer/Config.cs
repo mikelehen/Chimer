@@ -15,6 +15,7 @@ namespace Chimer
         public int inputLatency;
         public int outputLatency;
         public int inputVolume;
+        public int inputThreshold;
 
         public Dictionary<string, string> sounds;
         public Dictionary<string, int> zones;

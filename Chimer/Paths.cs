@@ -33,7 +33,7 @@ namespace Chimer
         {
             get
             {
-                return BaseDir + "\\chimer.log";
+                return BaseDir + "\\" + LOG_FILE;
             }
         }
 

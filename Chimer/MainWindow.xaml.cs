@@ -114,7 +114,7 @@
                 engine.Dispose();
                 engine = null;
             }
-            engine = new AudioEngine(44100, config.inputDevice, config.outputDevice, config.inputLatency, config.outputLatency, config.inputVolume);
+            engine = new AudioEngine(44100, config.inputDevice, config.outputDevice, config.inputLatency, config.outputLatency, config.inputVolume, config.inputThreshold);
 
             cachedSounds.Clear();
             foreach (var kvp in config.sounds)
@@ -163,6 +163,14 @@
                 ZoneCombo.Items.Add("No zones configured.");
             }
             ZoneCombo.SelectedIndex = 0;
+
+            engine.InputStatusChange += (sender, status) =>
+            {
+                this.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    lblPassThrough.Content = "Volume: " + status.Volume + (status.Muted ? " (Muted)" : " (Pass Through)");
+                }));
+            };
         }
 
         private void playChime(string zone, string sound)
