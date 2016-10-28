@@ -50,8 +50,10 @@
   "inputVolume": 100,
 
   /*
-    Input threshold (0 to 100).  Input will be muted if the volume is below the
-    threshold, to prevent background noise.
+    Input threshold (0 to 100). To prevent background noise, input will be
+    muted when the input is below the specified threshold. Once exceeded,
+    input will passed through to all zones until it dips below the
+    threshold for 5 seconds, at which point it will be muted again.
   */
   "inputThreshold": 5,
 

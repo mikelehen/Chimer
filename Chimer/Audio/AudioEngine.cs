@@ -63,7 +63,7 @@
             passThruBufferedProvider = new BufferedWaveProvider(waveIn.WaveFormat);
             SampleChannel inputChannel = new SampleChannel(passThruBufferedProvider);
 
-            MutingSampleProvider mutedInputChannel = new MutingSampleProvider(inputChannel, 
+            MutingSampleProvider mutedInputChannel = new MutingSampleProvider(inputChannel,
                 inputThreshold / 100.0f, inputVolume / 100.0f, TimeSpan.FromSeconds(INPUT_MUTE_DELAY_SECONDS));
             mutedInputChannel.VolumeMeter += (sender, volume) => {
                 if (InputStatusChange != null)
