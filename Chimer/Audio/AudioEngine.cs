@@ -4,7 +4,13 @@
     using NAudio.Wave;
     using NAudio.Wave.SampleProviders;
     using System;
+    using System.Diagnostics;
     using System.Text;
+
+    enum PassThroughMode
+    {
+        Off, Auto, On
+    }
 
     struct InputStatus
     {
@@ -18,7 +24,9 @@
         private readonly WasapiCapture waveIn;
         private readonly MixingSampleProvider mixer;
         private readonly BufferedWaveProvider passThruBufferedProvider;
+        private readonly MutingSampleProvider mutedInputChannel;
         private readonly int outputLatency;
+        private readonly int inputThreshold;
 
         // Delay to wait after the input threshold was last exceeded before re-muting.
         private const int INPUT_MUTE_DELAY_SECONDS = 5;
@@ -33,6 +41,7 @@
                 " input device " + inputDevice.ID + " (" + inputDevice.FriendlyName + ")");
 
             this.outputLatency = outputLatency;
+            this.inputThreshold = inputThreshold;
 
             if (outputLatency == 0)
             {
@@ -63,7 +72,7 @@
             passThruBufferedProvider = new BufferedWaveProvider(waveIn.WaveFormat);
             SampleChannel inputChannel = new SampleChannel(passThruBufferedProvider);
 
-            MutingSampleProvider mutedInputChannel = new MutingSampleProvider(inputChannel,
+            this.mutedInputChannel = new MutingSampleProvider(inputChannel,
                 inputThreshold / 100.0f, inputVolume / 100.0f, TimeSpan.FromSeconds(INPUT_MUTE_DELAY_SECONDS));
             mutedInputChannel.VolumeMeter += (sender, volume) => {
                 if (InputStatusChange != null)
@@ -91,6 +100,37 @@
         }
 
         public event EventHandler<InputStatus> InputStatusChange;
+
+        public PassThroughMode PassThroughMode
+        {
+            set
+            {
+                if (value == PassThroughMode.Off)
+                {
+                    if (waveIn.CaptureState == CaptureState.Capturing)
+                    {
+                        waveIn.StopRecording();
+                    }
+                }
+                else
+                {
+                    if (value == PassThroughMode.Auto)
+                    {
+                        mutedInputChannel.VolumeThreshold = inputThreshold / 100.0f;
+                    }
+                    else
+                    {
+                        Debug.Assert(value == PassThroughMode.On);
+                        mutedInputChannel.VolumeThreshold = 0;
+                    }
+
+                    if (waveIn.CaptureState == CaptureState.Stopped)
+                    {
+                        waveIn.StartRecording();
+                    }
+                }
+            }
+        }
 
         private DateTime lastSkipMessage = DateTime.MinValue;
         private void onInputDataAvailable(object sender, WaveInEventArgs e)

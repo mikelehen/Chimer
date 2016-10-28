@@ -12,7 +12,7 @@
     using System.Linq;
     using System.Windows.Threading;
     using System.Windows.Data;
-
+    using System.Threading;
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -164,6 +164,9 @@
             }
             ZoneCombo.SelectedIndex = 0;
 
+            PassThroughCombo.ItemsSource = new string[] { "Off", "Auto", "On" };
+            PassThroughCombo.SelectedIndex = 1;
+
             engine.InputStatusChange += (sender, status) =>
             {
                 this.Dispatcher.BeginInvoke(new Action(() =>
@@ -212,6 +215,24 @@
             {
                 Debug.Assert(currentConfig.zones.ContainsKey(zone));
                 playChime(zone, sound);
+            }
+        }
+
+        private void PassThroughCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            string value = PassThroughCombo.SelectedValue.ToString();
+            if (value == "Off")
+            {
+                engine.PassThroughMode = PassThroughMode.Off;
+            }
+            else if (value == "Auto")
+            {
+                engine.PassThroughMode = PassThroughMode.Auto;
+            }
+            else
+            {
+                Debug.Assert(value == "On");
+                engine.PassThroughMode = PassThroughMode.On;
             }
         }
     }

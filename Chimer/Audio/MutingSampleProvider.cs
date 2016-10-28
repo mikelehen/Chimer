@@ -12,7 +12,6 @@ namespace Chimer.Audio
         private const int VolumeMeterSamplesPerSecond = 3;
 
         private readonly ISampleProvider source;
-        private readonly float volumeThreshold;
         private readonly float volumeMultiplier;
         private readonly TimeSpan unmutePeriod;
 
@@ -22,10 +21,12 @@ namespace Chimer.Audio
         private bool muted = true;
         private int samplesUntilRemute = 0;
 
+        public float VolumeThreshold;
+
         public MutingSampleProvider(ISampleProvider source, float volumeThreshold, float volumeMultiplier, TimeSpan unmutePeriod)
         {
             this.source = source;
-            this.volumeThreshold = volumeThreshold;
+            this.VolumeThreshold = volumeThreshold;
             this.volumeMultiplier = volumeMultiplier;
             this.unmutePeriod = unmutePeriod;
         }
@@ -56,7 +57,7 @@ namespace Chimer.Audio
                 this.maxVolumeMeasurement = Math.Max(this.maxVolumeMeasurement, buffer[i]);
                 this.samplesUntilVolumeMeasurement--;
 
-                if (buffer[i] > volumeThreshold)
+                if (buffer[i] > VolumeThreshold)
                 {
                     this.muted = false;
                     this.samplesUntilRemute = source.WaveFormat.SampleRate * source.WaveFormat.Channels * (int)this.unmutePeriod.TotalSeconds;

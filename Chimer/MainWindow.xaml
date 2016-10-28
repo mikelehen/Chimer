@@ -34,22 +34,22 @@
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>
-        <Grid Grid.Row="1" Grid.Column="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"></ColumnDefinition>
-                <ColumnDefinition Width="1*"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-            <GroupBox Header="Play A Chime" Grid.Row="0" Grid.Column="0">
+
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1">
+            <GroupBox Header="Play A Chime">
                 <StackPanel Orientation="Horizontal">
                     <ComboBox Name="ZoneCombo" Margin="5" MinWidth="75" />
                     <ComboBox Name="SoundCombo" Margin="5" MinWidth="75" />
                     <Button Content="Play" Margin="5" Width="75" Click="PlayChime_Click"/>
                 </StackPanel>
             </GroupBox>
-            <GroupBox Header="Pass Through" Grid.Row="0" Grid.Column="1">
-                <Label x:Name="lblPassThrough" Content="Disabled"/>
+            <GroupBox Header="Pass Through">
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox Name="PassThroughCombo" Margin="5" MinWidth="60" SelectionChanged="PassThroughCombo_SelectionChanged" />
+                    <Label x:Name="lblPassThrough" Content="Disabled"/>
+                </StackPanel>
             </GroupBox>
-        </Grid>
+        </StackPanel>
         <GroupBox Header="Status" Grid.Row="2" Grid.Column="1">
             <TextBox IsReadOnly="True" AcceptsReturn="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Name="txtStatus" Grid.Row="2" FontFamily="Consolas" FontSize="10.667" />
         </GroupBox>
